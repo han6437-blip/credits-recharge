@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credits 充值申请 - Enter.Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+var _sb = window.supabase;
+var supabase = _sb.createClient(
+  'https://iajpcsbebjjtaaspmwws.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhanBjc2JlYmpqdGFhc3Btd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDI4MzksImV4cCI6MjA5NjcxODgzOX0.yzYJd8pUPZzoWH-GutFC5uzwv2oRH0MGNdoitR4UO_4'
+);
+</script>
+<style>
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header .logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+.header .subtitle {
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 32px 28px;
+  border: 1px solid var(--border);
+}
+
+.card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.form-group label .required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  background: #fff;
+}
+
+.form-group input.error,
+.form-group select.error {
+  border-color: var(--danger);
+}
+
+.form-group .error-msg {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+  display: none;
+}
+
+.form-group .error-msg.show {
+  display: block;
+}
+
+.char-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+  margin-top: 2px;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn {
+  flex: 1;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--bg);
+  border-color: #cbd5e1;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideDown 0.3s ease;
+  white-space: nowrap;
+}
+
+.toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">Enter.Pro</div>
+    <div class="subtitle">Credits 充值申请</div>
+  </div>
+
+  <div class="card">
+    <h2>📝 填写充值申请</h2>
+
+    <form id="applicationForm" novalidate>
+      <div class="form-group">
+        <label>邮箱地址 <span class="required">*</span></label>
+        <input type="email" id="email" placeholder="yourname@enter.pro" autocomplete="email">
+        <div class="error-msg" id="emailError">请输入有效的邮箱地址</div>
+      </div>
+
+      <div class="form-group">
+        <label>名称 <span class="required">*</span></label>
+        <input type="text" id="name" placeholder="请输入你的姓名或昵称" maxlength="20">
+        <div class="char-count" id="nameCount">0 / 20</div>
+        <div class="error-msg" id="nameError">请输入名称（最多20个字符，支持中英文）</div>
+      </div>
+
+      <div class="form-group">
+        <label>所学课程 <span class="required">*</span></label>
+        <select id="course">
+          <option value="">请选择课程</option>
+          <option value="AI Coding 基础入门">AI Coding 基础入门</option>
+          <option value="AI 辅助编程实战">AI 辅助编程实战</option>
+          <option value="Cursor 高效开发指南">Cursor 高效开发指南</option>
+          <option value="GitHub Copilot 进阶应用">GitHub Copilot 进阶应用</option>
+          <option value="AI 代码审查与优化">AI 代码审查与优化</option>
+          <option value="AI Coding 全栈项目实战">AI Coding 全栈项目实战</option>
+        </select>
+        <div class="error-msg" id="courseError">请选择所学课程</div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn btn-outline" id="resetBtn">🔄 重填</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+          提交申请
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  const form = document.getElementById('applicationForm');
+  const emailInput = document.getElementById('email');
+  const nameInput = document.getElementById('name');
+  const courseSelect = document.getElementById('course');
+  const submitBtn = document.getElementById('submitBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const nameCount = document.getElementById('nameCount');
+
+  // Email validation
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // Show/hide error
+  function showError(fieldId, show) {
+    const errorEl = document.getElementById(fieldId + 'Error');
+    const inputEl = document.getElementById(fieldId);
+    if (show) {
+      errorEl.classList.add('show');
+      inputEl.classList.add('error');
+    } else {
+      errorEl.classList.remove('show');
+      inputEl.classList.remove('error');
+    }
+  }
+
+  // Validate all fields
+  function validateForm() {
+    let valid = true;
+
+    // Email
+    if (!emailInput.value.trim() || !isValidEmail(emailInput.value.trim())) {
+      showError('email', true);
+      valid = false;
+    } else {
+      showError('email', false);
+    }
+
+    // Name
+    if (!nameInput.value.trim() || nameInput.value.trim().length > 20) {
+      showError('name', true);
+      valid = false;
+    } else {
+      showError('name', false);
+    }
+
+    // Course
+    if (!courseSelect.value) {
+      showError('course', true);
+      valid = false;
+    } else {
+      showError('course', false);
+    }
+
+    submitBtn.disabled = !valid;
+    return valid;
+  }
+
+  // Character count
+  nameInput.addEventListener('input', function() {
+    nameCount.textContent = nameInput.value.length + ' / 20';
+    validateForm();
+  });
+
+  emailInput.addEventListener('input', validateForm);
+  courseSelect.addEventListener('change', validateForm);
+
+  // Show toast
+  function showToast(message, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Handle submit
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading-spinner"></span> 提交中...';
+
+    try {
+      const { data, error } = await supabase
+        .from('applications')
+        .insert([{
+          email: emailInput.value.trim(),
+          name: nameInput.value.trim(),
+          course: courseSelect.value
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      showToast('申请提交成功！', 'success');
+      setTimeout(() => {
+        window.location.href = 'result.html?id=' + data.id;
+      }, 800);
+    } catch (err) {
+      showToast('提交失败：' + err.message, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = '提交申请';
+    }
+  });
+
+  // Handle reset
+  resetBtn.addEventListener('click', function() {
+    form.reset();
+    document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('input.error, select.error').forEach(el => el.classList.remove('error'));
+    nameCount.textContent = '0 / 20';
+    submitBtn.disabled = true;
+  });
+})();
+</script>
+</body>
+</html>

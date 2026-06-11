@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工单管理 - 充值后台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+var _sb = window.supabase;
+var supabase = _sb.createClient(
+  'https://iajpcsbebjjtaaspmwws.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhanBjc2JlYmpqdGFhc3Btd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDI4MzksImV4cCI6MjA5NjcxODgzOX0.yzYJd8pUPZzoWH-GutFC5uzwv2oRH0MGNdoitR4UO_4'
+);
+</script>
+<style>
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-actions .admin-email {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-sm:hover { background: var(--bg); }
+.btn-sm.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-sm.primary:hover { background: var(--primary-hover); }
+
+/* Main */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+}
+
+.stat-card .stat-value {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.stat-card.pending .stat-value { color: var(--warning); }
+.stat-card.approved .stat-value { color: var(--success); }
+.stat-card.rejected .stat-value { color: var(--danger); }
+.stat-card.total .stat-value { color: var(--primary); }
+
+/* Table */
+.table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+tbody td {
+  padding: 12px 20px;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.pending {
+  background: var(--warning-bg);
+  color: #92400e;
+}
+
+.badge.approved {
+  background: var(--success-bg);
+  color: #065f46;
+}
+
+.badge.rejected {
+  background: var(--danger-bg);
+  color: #991b1b;
+}
+
+/* Pagination */
+.pagination {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: #cbd5e1;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.modal-close:hover { background: #e2e8f0; }
+
+.modal-body {
+  padding: 24px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.detail-label {
+  width: 80px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.detail-value {
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* Reject form */
+.reject-form {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.reject-form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.reject-form textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.reject-form textarea:focus {
+  border-color: var(--danger);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #059669; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-outline { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); }
+.btn-outline:hover { background: var(--bg); }
+
+/* Loading & Empty */
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 500;
+  animation: toastIn 0.3s ease;
+}
+
+.toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.toast.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-brand">🛡️ 充值管理后台</div>
+  <div class="navbar-actions">
+    <span class="admin-email" id="adminEmail"></span>
+    <button class="btn-sm" id="logoutBtn">退出登录</button>
+  </div>
+</div>
+
+<main class="main">
+  <div class="page-header">
+    <h1>工单列表</h1>
+    <button class="btn-sm primary" id="refreshBtn">🔄 刷新数据</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card total">
+      <div class="stat-value" id="statTotal">-</div>
+      <div class="stat-label">全部工单</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-value" id="statPending">-</div>
+      <div class="stat-label">待处理</div>
+    </div>
+    <div class="stat-card approved">
+      <div class="stat-value" id="statApproved">-</div>
+      <div class="stat-label">已通过</div>
+    </div>
+    <div class="stat-card rejected">
+      <div class="stat-value" id="statRejected">-</div>
+      <div class="stat-label">已驳回</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <span id="tableTitle">工单记录</span>
+      <span style="font-size:12px;color:var(--text-secondary);font-weight:400;" id="lastRefresh"></span>
+    </div>
+    <div id="loadingState" class="loading-container">
+      <div class="spinner"></div>
+      <div style="color:var(--text-secondary);">加载中...</div>
+    </div>
+
+    <div id="tableContent" style="display:none;">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>申请时间</th>
+              <th>名称</th>
+              <th>邮箱</th>
+              <th>课程</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination">
+        <div class="pagination-info" id="pageInfo"></div>
+        <div class="pagination-buttons" id="pageButtons"></div>
+      </div>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <div class="icon">📭</div>
+      <div>暂无工单记录</div>
+    </div>
+  </div>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>工单详情</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
+  let totalCount = 0;
+  let allApplications = [];
+  let currentApp = null;
+
+  // ==================== Auth ====================
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return null;
+    }
+    document.getElementById('adminEmail').textContent = session.user.email;
+    return session;
+  }
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', async function() {
+    await supabase.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  // ==================== Data ====================
+  async function loadApplications() {
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('tableContent').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+
+    try {
+      const { data, error, count } = await supabase
+        .from('applications')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      allApplications = data || [];
+      totalCount = allApplications.length;
+      currentPage = 1;
+      renderTable();
+      updateStats();
+      document.getElementById('lastRefresh').textContent =
+        '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+    } catch (err) {
+      showToast('加载失败：' + err.message, 'error');
+    }
+  }
+
+  function updateStats() {
+    const apps = allApplications;
+    document.getElementById('statTotal').textContent = apps.length;
+    document.getElementById('statPending').textContent = apps.filter(a => a.status === 'pending').length;
+    document.getElementById('statApproved').textContent = apps.filter(a => a.status === 'approved').length;
+    document.getElementById('statRejected').textContent = apps.filter(a => a.status === 'rejected').length;
+  }
+
+  function renderTable() {
+    const loadingEl = document.getElementById('loadingState');
+    const tableEl = document.getElementById('tableContent');
+    const emptyEl = document.getElementById('emptyState');
+
+    loadingEl.style.display = 'none';
+
+    if (allApplications.length === 0) {
+      tableEl.style.display = 'none';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    tableEl.style.display = 'block';
+    emptyEl.style.display = 'none';
+
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = allApplications.slice(start, start + PAGE_SIZE);
+
+    // Render table body
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = pageItems.map(app => `
+      <tr data-id="${app.id}">
+        <td>${formatTime(app.created_at)}</td>
+        <td>${escapeHtml(app.name)}</td>
+        <td>${escapeHtml(app.email)}</td>
+        <td>${escapeHtml(app.course)}</td>
+        <td><span class="badge ${app.status}">${statusLabel(app.status)}</span></td>
+      </tr>
+    `).join('');
+
+    // Bind row clicks
+    tbody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', function() {
+        const id = this.dataset.id;
+        openDetail(id);
+      });
+    });
+
+    // Pagination info
+    document.getElementById('pageInfo').textContent =
+      `共 ${totalCount} 条记录，第 ${currentPage} / ${totalPages} 页`;
+
+    // Pagination buttons
+    const pageButtons = document.getElementById('pageButtons');
+    let btnHtml = '';
+    btnHtml += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="window.goToPage(${currentPage - 1})">&laquo; 上一页</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      btnHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="window.goToPage(${i})">${i}</button>`;
+    }
+    btnHtml += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.goToPage(${currentPage + 1})">下一页 &raquo;</button>`;
+    pageButtons.innerHTML = btnHtml;
+  }
+
+  window.goToPage = function(page) {
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable();
+    document.getElementById('tableContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // ==================== Detail Modal ====================
+  function openDetail(id) {
+    currentApp = allApplications.find(a => a.id === id);
+    if (!currentApp) return;
+
+    const canOperate = currentApp.status === 'pending';
+
+    document.getElementById('modalBody').innerHTML = `
+      <div class="detail-row">
+        <div class="detail-label">申请单号</div>
+        <div class="detail-value" style="font-size:12px;font-family:monospace;">${currentApp.id}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">名称</div>
+        <div class="detail-value">${escapeHtml(currentApp.name)}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">邮箱</div>
+        <div class="detail-value">${escapeHtml(currentApp.email)}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">课程</div>
+        <div class="detail-value">${escapeHtml(currentApp.course)}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">状态</div>
+        <div class="detail-value"><span class="badge ${currentApp.status}">${statusLabel(currentApp.status)}</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">提交时间</div>
+        <div class="detail-value">${formatTime(currentApp.created_at)}</div>
+      </div>
+      ${currentApp.status === 'rejected' && currentApp.reject_reason ? `
+      <div class="detail-row">
+        <div class="detail-label">驳回理由</div>
+        <div class="detail-value" style="color:var(--danger);">${escapeHtml(currentApp.reject_reason)}</div>
+      </div>` : ''}
+      ${currentApp.updated_at && currentApp.updated_at !== currentApp.created_at ? `
+      <div class="detail-row">
+        <div class="detail-label">处理时间</div>
+        <div class="detail-value">${formatTime(currentApp.updated_at)}</div>
+      </div>` : ''}
+
+      ${canOperate ? `
+      <div class="reject-form" id="rejectForm" style="display:none;">
+        <label>驳回理由（必填）</label>
+        <textarea id="rejectReason" placeholder="请输入驳回理由..."></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-danger" id="confirmRejectBtn">确认驳回</button>
+          <button class="btn btn-outline" id="cancelRejectBtn">取消</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" id="actionButtons">
+        <button class="btn btn-success" id="approveBtn">✅ 通过 - 已充值</button>
+        <button class="btn btn-danger" id="showRejectBtn">❌ 驳回</button>
+        <button class="btn btn-outline" id="modalCloseBtn">关闭</button>
+      </div>` : `
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modalCloseBtn">关闭</button>
+      </div>`}
+    `;
+
+    bindModalEvents();
+    document.getElementById('modalOverlay').style.display = 'flex';
+  }
+
+  function bindModalEvents() {
+    const canOperate = currentApp && currentApp.status === 'pending';
+
+    // Close buttons
+    document.getElementById('modalClose').onclick = closeModal;
+    document.getElementById('modalOverlay').onclick = function(e) {
+      if (e.target === this) closeModal();
+    };
+
+    const closeBtn = document.getElementById('modalCloseBtn');
+    if (closeBtn) closeBtn.onclick = closeModal;
+
+    if (canOperate) {
+      // Approve
+      document.getElementById('approveBtn').onclick = async function() {
+        if (!confirm('确认该申请已充值到账？此操作不可撤销。')) return;
+        await updateStatus('approved', null);
+      };
+
+      // Show reject form
+      document.getElementById('showRejectBtn').onclick = function() {
+        document.getElementById('rejectForm').style.display = 'block';
+        document.getElementById('actionButtons').style.display = 'none';
+      };
+
+      // Cancel reject
+      document.getElementById('cancelRejectBtn').onclick = function() {
+        document.getElementById('rejectForm').style.display = 'none';
+        document.getElementById('actionButtons').style.display = 'flex';
+        document.getElementById('rejectReason').value = '';
+      };
+
+      // Confirm reject
+      document.getElementById('confirmRejectBtn').onclick = async function() {
+        const reason = document.getElementById('rejectReason').value.trim();
+        if (!reason) {
+          showToast('请输入驳回理由', 'error');
+          return;
+        }
+        await updateStatus('rejected', reason);
+      };
+    }
+  }
+
+  async function updateStatus(status, rejectReason) {
+    const updateData = {
+      status: status,
+      updated_at: new Date().toISOString()
+    };
+    if (rejectReason !== null && rejectReason !== undefined) {
+      updateData.reject_reason = rejectReason;
+    }
+
+    const { error } = await supabase
+      .from('applications')
+      .update(updateData)
+      .eq('id', currentApp.id);
+
+    if (error) {
+      showToast('操作失败：' + error.message, 'error');
+      return;
+    }
+
+    // Update local data
+    const idx = allApplications.findIndex(a => a.id === currentApp.id);
+    if (idx !== -1) {
+      allApplications[idx].status = status;
+      allApplications[idx].updated_at = updateData.updated_at;
+      if (rejectReason !== null && rejectReason !== undefined) {
+        allApplications[idx].reject_reason = rejectReason;
+      }
+    }
+    currentApp.status = status;
+
+    showToast(status === 'approved' ? '已标记为充值成功' : '已驳回该申请', 'success');
+    closeModal();
+    renderTable();
+    updateStats();
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').style.display = 'none';
+    currentApp = null;
+  }
+
+  // ==================== Helpers ====================
+  function formatTime(ts) {
+    if (!ts) return '-';
+    return new Date(ts).toLocaleString('zh-CN', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function statusLabel(s) {
+    switch (s) {
+      case 'pending': return '待处理';
+      case 'approved': return '已通过';
+      case 'rejected': return '已驳回';
+      default: return s;
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showToast(msg, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ==================== Events ====================
+  document.getElementById('refreshBtn').addEventListener('click', function() {
+    showToast('正在刷新...', 'info');
+    loadApplications();
+  });
+
+  // ==================== Init ====================
+  async function init() {
+    const session = await checkAuth();
+    if (!session) return;
+    await loadApplications();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

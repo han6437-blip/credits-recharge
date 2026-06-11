@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>申请结果 - Enter.Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+var _sb = window.supabase;
+var supabase = _sb.createClient(
+  'https://iajpcsbebjjtaaspmwws.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhanBjc2JlYmpqdGFhc3Btd3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDI4MzksImV4cCI6MjA5NjcxODgzOX0.yzYJd8pUPZzoWH-GutFC5uzwv2oRH0MGNdoitR4UO_4'
+);
+</script>
+<style>
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header .logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+.header .subtitle {
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 32px 28px;
+  border: 1px solid var(--border);
+}
+
+/* Status banner */
+.status-banner {
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+}
+
+.status-banner.pending {
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+}
+
+.status-banner.approved {
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+}
+
+.status-banner.rejected {
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+}
+
+.status-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.status-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.status-banner.pending .status-title { color: #92400e; }
+.status-banner.approved .status-title { color: #065f46; }
+.status-banner.rejected .status-title { color: #991b1b; }
+
+.status-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.reject-reason-box {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.reject-reason-box .label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 4px;
+}
+
+.reject-reason-box .reason {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Info table */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.info-table td {
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-table td:first-child {
+  color: var(--text-secondary);
+  width: 100px;
+  font-weight: 500;
+}
+
+.info-table td:last-child {
+  text-align: right;
+  font-weight: 500;
+}
+
+.application-id {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  flex: 1;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--bg);
+  border-color: #cbd5e1;
+}
+
+/* Loading */
+.loading-container {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Error state */
+.error-container {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.error-container .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.error-container .msg {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Refreshed indicator */
+.refreshed-at {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideDown 0.3s ease;
+}
+
+.toast.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">Enter.Pro</div>
+    <div class="subtitle">Credits 充值申请结果</div>
+  </div>
+
+  <div class="card" id="contentCard">
+    <div class="loading-container" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">加载申请信息...</div>
+    </div>
+
+    <div id="resultContent" style="display: none;">
+      <!-- Info table -->
+      <table class="info-table">
+        <tr><td>申请单号</td><td><span class="application-id" id="appId"></span></td></tr>
+        <tr><td>名称</td><td id="appName"></td></tr>
+        <tr><td>邮箱</td><td id="appEmail"></td></tr>
+        <tr><td>课程</td><td id="appCourse"></td></tr>
+        <tr><td>提交时间</td><td id="appTime"></td></tr>
+      </table>
+
+      <!-- Status banner -->
+      <div class="status-banner" id="statusBanner">
+        <div class="status-icon" id="statusIcon"></div>
+        <div class="status-title" id="statusTitle"></div>
+        <div class="status-desc" id="statusDesc"></div>
+        <div class="reject-reason-box" id="rejectBox" style="display: none;">
+          <div class="label">驳回理由</div>
+          <div class="reason" id="rejectReason"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="button-group">
+        <button class="btn btn-outline" id="refreshBtn">🔄 刷新状态</button>
+        <button class="btn btn-outline" id="resubmitBtn">📝 再次提交</button>
+      </div>
+
+      <div class="refreshed-at" id="refreshedAt"></div>
+    </div>
+
+    <div class="error-container" id="errorContent" style="display: none;">
+      <div class="icon">🔍</div>
+      <div class="msg" id="errorMsg">未找到申请记录</div>
+      <button class="btn btn-primary" onclick="window.location.href='index.html'">返回申请</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const applicationId = urlParams.get('id');
+
+  if (!applicationId) {
+    showError('缺少申请单号，请从申请页面重新提交。');
+    return;
+  }
+
+  document.getElementById('appId').textContent = applicationId;
+
+  async function loadApplication() {
+    const loadingEl = document.getElementById('loading');
+    const resultEl = document.getElementById('resultContent');
+    const errorEl = document.getElementById('errorContent');
+
+    loadingEl.style.display = 'block';
+    resultEl.style.display = 'none';
+    errorEl.style.display = 'none';
+
+    try {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('id', applicationId)
+        .single();
+
+      if (error || !data) {
+        showError('未找到该申请记录，请确认单号是否正确。');
+        return;
+      }
+
+      renderApplication(data);
+    } catch (err) {
+      showError('加载失败：' + err.message);
+    }
+  }
+
+  function renderApplication(app) {
+    const loadingEl = document.getElementById('loading');
+    const resultEl = document.getElementById('resultContent');
+    const errorEl = document.getElementById('errorContent');
+
+    loadingEl.style.display = 'none';
+    errorEl.style.display = 'none';
+    resultEl.style.display = 'block';
+
+    // Fill info
+    document.getElementById('appName').textContent = app.name;
+    document.getElementById('appEmail').textContent = app.email;
+    document.getElementById('appCourse').textContent = app.course;
+    document.getElementById('appTime').textContent = new Date(app.created_at).toLocaleString('zh-CN');
+
+    // Status banner
+    const banner = document.getElementById('statusBanner');
+    const icon = document.getElementById('statusIcon');
+    const title = document.getElementById('statusTitle');
+    const desc = document.getElementById('statusDesc');
+    const rejectBox = document.getElementById('rejectBox');
+
+    banner.className = 'status-banner';
+    rejectBox.style.display = 'none';
+
+    switch (app.status) {
+      case 'pending':
+        banner.classList.add('pending');
+        icon.textContent = '⏳';
+        title.textContent = '待处理';
+        desc.textContent = '管理员尚未处理你的充值申请，请耐心等待。';
+        break;
+      case 'approved':
+        banner.classList.add('approved');
+        icon.textContent = '✅';
+        title.textContent = '充值已到账';
+        desc.textContent = '你的 Credits 已成功充值，可以在账户中查看。';
+        break;
+      case 'rejected':
+        banner.classList.add('rejected');
+        icon.textContent = '❌';
+        title.textContent = '申请已驳回';
+        desc.textContent = '你的充值申请未被通过。';
+        if (app.reject_reason) {
+          rejectBox.style.display = 'block';
+          document.getElementById('rejectReason').textContent = app.reject_reason;
+        }
+        break;
+    }
+
+    // Refresh time
+    document.getElementById('refreshedAt').textContent =
+      '上次刷新：' + new Date().toLocaleTimeString('zh-CN');
+  }
+
+  function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('resultContent').style.display = 'none';
+    document.getElementById('errorContent').style.display = 'block';
+    document.getElementById('errorMsg').textContent = msg;
+  }
+
+  function showToast(msg, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  // Refresh button
+  document.getElementById('refreshBtn').addEventListener('click', function() {
+    showToast('正在刷新...', 'info');
+    loadApplication();
+  });
+
+  // Resubmit button
+  document.getElementById('resubmitBtn').addEventListener('click', function() {
+    window.location.href = 'index.html';
+  });
+
+  // Initial load
+  loadApplication();
+})();
+</script>
+</body>
+</html>
